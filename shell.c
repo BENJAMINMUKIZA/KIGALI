@@ -1,70 +1,38 @@
 #include "shell.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define MAX_COMMAND_LENGTH 100
 
 /**
- * read_command - Read user input from stdin
- * @command: Buffer to store the user input
+ * display_prompt - the prompt for the user to enter a command.
  */
-void read_command(char *command)
+void display_prompt(void)
 {
-	fgets(command, READ_BUF_SIZE, stdin);
-
-	if (command[strlen(command) - 1] == '\n')
-		command[strlen(command) - 1] = '\0';
+	printf("#cisfun$ ");
+	fflush(stdout);
 }
 
 /**
- * parse_command - Parse the command into individual arguments
- * @command: User input command
- * @args: Array to store the parsed arguments
+ * execute_command - Execute the command using execve.
+ * @command: The command to be executed
+ *
+ * Return: No return value
  */
-void parse_command(char *command, char **args)
+void execute_command(char *command)
 {
-	char *token;
-	int i = 0;
-
-	token = strtok(command, " ");
-
-	while (token != NULL)
+	if (strlen(command) > 0)
 	{
-		args[i++] = token;
-		token = strtok(NULL, " ");
+		char *args[] = {command, NULL};
+
+		execve(command, args, NULL);
+
+		fprintf(stderr, "%s: No such file or directory\n", command);
+		exit(1);
 	}
-	args[i] = NULL;
 }
-
-/**
- * execute_command - Execute the command by forking a new process
- * @args: Array of command arguments
- * Return: 1 on success
- */
-int execute_command(char **args)
-{
-	pid_t pid;
-	int status;
-
-	pid = fork();
-
-	if (pid < 0)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	else if (pid == 0)
-	{
-		if (execvp(args[0], args) == -1)
-		{
-			perror("execvp");
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-	}
-
-	return (1);
-}
-
 /**
  * main - Entry point of the shell program
  *
@@ -72,15 +40,32 @@ int execute_command(char **args)
  */
 int main(void)
 {
-	char command[READ_BUF_SIZE];
-	char *args[BUF_FLUSH];
+	char command[MAX_COMMAND_LENGTH];
 
 	while (1)
 	{
-		printf("$ ");
-		read_command(command);
-		parse_command(command, args);
-		execute_command(args);
+		display_prompt();
+		if (fgets(command, sizeof(command), stdin) == NULL)
+		{
+			break;
+		}
+		command[strcspn(command, "\n")] = '\0';
+
+		pid_t pid = fork();
+
+		if (pid < 0)
+		{
+			fprintf(stderr, "Fork failed\n");
+			exit(1);
+		}
+		else if (pid == 0)
+		{
+			execute_command(command);
+		}
+		else
+		{
+			wait(NULL);
+		}
 	}
 
 	return (0);
