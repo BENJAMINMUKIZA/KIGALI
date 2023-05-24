@@ -11,30 +11,39 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <errno.h>
-
-#define WRITE_BUF_SIZE 2048
-#define READ_BUF_SIZE 2048
-#define BUF_FLUSH -1
-
-#define CONVERT_LOWERCASE 1
-#define CONVERT_UNSIGNED 2
-#define CMD_AND 2
-#define CMD_CHAIN 3
-#define CMD_NORM 0
-#define CMD_OR 1
-#define HIST_FILE ".simple_shell_history"
-#define HIST_MAX 4096
-#define USE_GETLINE 0
-#define USE_STRTOK 0
-
-extern char **environ;
-
+/**
+ * struct liststr - Linked list structures of a function inserted
+ * @num: Number inputed
+ * @str: String inserted
+ * @next: Pointer to next node of a shell
+ */
 typedef struct liststr
 {
 	int num;
 	char *str;
 	struct liststr *next;
 } list_t;
+/**
+ * struct passinfo - A program to pass Information structure for shell
+ * @arg: Argument of the program
+ * @path: Path of the info
+ * @argv: Argument vector of the functo
+ * @argc: Argument count of the number
+ * @err_num: Error number of the progr
+ * @line_count: Line count of the program,
+ * @linecount_flag: Line count flag used
+ * @env: Environment list of gthe command line
+ * @fname: File name of the function
+ * @alias: Alias list of the command
+ * @history: History list of the structured
+ * @environ: Environment variables used
+ * @status: Status of the pro
+ * @env_changed: Environment changed flag inputed
+ * @cmd_buf: Command buffer line of pro
+ * @cmd_buf_type: Command buffer type of a progar
+ * @readfd: Read file descriptor of the function
+ * @histcount: History count of the histroy
+ */
 
 typedef struct passinfo
 {
@@ -58,15 +67,7 @@ typedef struct passinfo
 	int histcount;
 } info_t;
 
-#define INFO_INIT \
-{
-	\
-NULL, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0}
-typedef struct builtin
-{
-	char *type;
-	int (*func)(info_t *);
-} builtin_table;
+extern char **environ;
 
 int find_builtin(info_t *);
 void find_cmd(info_t *);
@@ -101,8 +102,6 @@ int is_delim(char, char *);
 int _isalpha(int);
 int _atoi(char *);
 int _myexit(info_t *);
-int _mycd(info_t *);
-int _myhelp(info_t *);
 int _myhistory(info_t *);
 int _myalias(info_t *);
 ssize_t get_input(info_t *);
@@ -142,4 +141,5 @@ int is_chain(info_t *, char *, size_t *);
 void print_error(info_t *info, char *estr);
 int print_d(int input, int fd);
 void remove_comments(char *str);
+
 #endif
